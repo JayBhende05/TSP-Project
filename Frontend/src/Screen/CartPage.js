@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import Navbar from "../Components/Navbar";
 import { useAuth } from "../context/auth";
@@ -13,6 +13,7 @@ const CartPage = () => {
   const [auth, setAuth] = useAuth();
   const [cart, setCart] = useCart();
   const [clientToken, setClientToken] = useState("");
+  const trail = useRef();
   const [instance, setInstance] = useState("");
 
   const navigate = useNavigate();
@@ -68,7 +69,10 @@ const CartPage = () => {
   const getToken = async () => {
     try {
       const { data } = await axios.get("/api/v1/product/braintree/token");
-      setClientToken(data?.clientToken);
+      // setClientToken(data?.clientToken);
+      trail.current = data?.clientToken;
+      console.log(data)
+      console.log("Client Token is ", trail);
     } catch (error) {
       console.log(error);
     }
@@ -225,16 +229,18 @@ const CartPage = () => {
                       </button>
                     )}
                   </div>
-                  
-                    <DropIn
+                  <div>
+                  <DropIn
                       options={{
-                        authorization: clientToken,
-                        paypal: {
+                        authorization: clientToken.current,
+                        paypal : {
                           flow: "vault",
                         },
                       }}
-                      onInstance={(instance) => setInstance(instance)}
+                      onInstance={(instance) => {console.log(instance); setInstance(instance)}}
                     />
+                 
+                    
                     <button
                       className="text-base leading-none w-full py-5 bg-gray-800 border-gray-800 border focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-800 text-white"
                       disabled={!instance || !auth?.user?.address}
@@ -242,6 +248,7 @@ const CartPage = () => {
                     >
                       Make Payments
                     </button>
+                    </div>
                   
                 </div>
               </div>
